@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEGO SUMO – Turnierverwaltung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #081b3a;
+      --bg-soft: #0f2b55;
+      --card: #12335f;
+      --accent: #21d4c3;
+      --accent-2: #44f6e0;
+      --text: #e9f9ff;
+      --danger: #ff5e7d;
+      --warn: #ffd166;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, #133a6b 0%, var(--bg) 50%, #051127 100%);
+      color: var(--text);
+      font-family: "Inter", system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    h1 {
+      margin: 0.2rem 0;
+      letter-spacing: 0.2rem;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      color: var(--accent-2);
+      text-shadow: 0 0 12px rgba(68, 246, 224, 0.35);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sub {
+      margin-top: -0.5rem;
+      opacity: 0.8;
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      width: min(1200px, 100%);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .panel {
+      background: linear-gradient(155deg, var(--card), var(--bg-soft));
+      border: 1px solid rgba(33, 212, 195, 0.25);
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    input, select, button {
+      border: none;
+      border-radius: 10px;
+      padding: 0.65rem 0.8rem;
+      font: inherit;
+    }
+
+    input, select {
+      background: #0b2447;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      min-width: 140px;
+    }
+
+    button {
+      background: linear-gradient(180deg, var(--accent), #19a795);
+      color: #05233c;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .1s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .danger { background: linear-gradient(180deg, #ff90a6, var(--danger)); color: #3a0411; }
+    .warning { background: linear-gradient(180deg, #ffe29a, var(--warn)); color: #3d2e00; }
+    .ghost { background: #0b2447; color: var(--text); border: 1px solid rgba(255,255,255,0.2); }
+
+    .participants {
+      margin-top: 0.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pill {
+      background: rgba(33, 212, 195, 0.14);
+      border: 1px solid rgba(33, 212, 195, 0.4);
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.9rem;
+    }
+
+    .ranking-wrap {
+      display: grid;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .ranking-grid {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .cols-1 { grid-template-columns: 1fr; }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .cols-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+    .rank-col {
+      background: rgba(0, 0, 0, 0.14);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 3rem 1fr 4rem;
+      gap: 0.5rem;
+      padding: 0.55rem 0.7rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      align-items: center;
+    }
+
+    .row:nth-child(even) { background: rgba(255,255,255,0.03); }
+    .row.head { font-weight: 800; color: var(--accent); background: rgba(0,0,0,0.2); }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 9, 20, 0.84);
+      display: none;
+      place-items: center;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .overlay.open { display: grid; }
+
+    .fight-card {
+      width: min(740px, 100%);
+      background: linear-gradient(140deg, #132f5f, #0a1f42);
+      border: 1px solid rgba(68,246,224,0.35);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 1rem;
+    }
+
+    .fight-title {
+      margin: 0;
+      text-align: center;
+      font-family: "ZCOOL QingKe HuangYou", cursive;
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      color: #ffeb89;
+      text-shadow: 0 0 18px rgba(255, 235, 137, 0.22);
+    }
+
+    .versus {
+      text-align: center;
+      margin: 0.2rem 0 0.8rem;
+      font-weight: 700;
+      color: var(--accent-2);
+    }
+
+    .timer {
+      text-align: center;
+      font-size: clamp(2rem, 10vw, 4rem);
+      font-weight: 800;
+      margin: 0.2rem 0;
+    }
+
+    .countdown {
+      text-align: center;
+      min-height: 3rem;
+      font-family: "ZCOOL QingKe HuangYou", cursive;
+      font-size: clamp(2.5rem, 10vw, 5rem);
+      color: #ff8ac4;
+      text-shadow: 0 0 22px rgba(255, 138, 196, 0.35);
+    }
+
+    .hidden-menu {
+      display: none;
+      margin-top: 0.7rem;
+      padding: 0.7rem;
+      border: 1px dashed rgba(68,246,224,0.5);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.18);
+    }
+
+    .hidden-menu.open { display: block; }
+
+    .hint {
+      font-size: 0.85rem;
+      opacity: .75;
+    }
+
+    @media (min-width: 920px) {
+      .layout { grid-template-columns: 0.9fr 1.1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1 id="logo">LEGO SUMO</h1>
+  <div class="sub">Turnierverwaltung & Punkteübersicht</div>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>Teilnehmer hinzufügen</h2>
+      <div class="controls">
+        <input id="nameInput" type="text" maxlength="28" placeholder="Name eingeben" />
+        <button id="addBtn">Hinzufügen</button>
+      </div>
+      <div id="participants" class="participants"></div>
+
+      <h2 style="margin-top:1rem;">Kampf anlegen</h2>
+      <div class="controls">
+        <select id="fighterA"></select>
+        <select id="fighterB"></select>
+        <button id="createFightBtn">Kampf wählen</button>
+      </div>
+
+      <div id="hiddenMenu" class="hidden-menu">
+        <strong>Verstecktes Menü – Kampfzeit</strong>
+        <div class="controls" style="margin-top:0.5rem;">
+          <input id="durationInput" type="number" min="30" max="900" step="10" value="240" />
+          <button id="saveDurationBtn" class="ghost">Speichern (Sekunden)</button>
+        </div>
+        <div class="hint">Tipp: Klick auf “LEGO SUMO” (5x), um dieses Menü ein-/auszublenden.</div>
+      </div>
+    </section>
+
+    <section class="panel ranking-wrap">
+      <h2 style="text-align:center;">Rangliste</h2>
+      <div id="ranking" class="ranking-grid cols-1"></div>
+    </section>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="fight-card">
+      <h3 class="fight-title">Kampf</h3>
+      <div id="versus" class="versus"></div>
+      <div id="countdown" class="countdown"></div>
+      <div id="timer" class="timer">04:00</div>
+      <div class="controls" style="justify-content:center; margin-bottom:0.8rem;">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn" class="warning" disabled>Pause</button>
+        <button id="endBtn" class="danger" disabled>Kampf Ende</button>
+        <button id="closeBtn" class="ghost">Schließen</button>
+      </div>
+      <div id="resultArea" style="display:none;">
+        <h4 style="margin-bottom:0.5rem;">Ergebnis wählen</h4>
+        <div class="controls">
+          <button id="winABtn"></button>
+          <button id="drawBtn" class="ghost">Unentschieden</button>
+          <button id="winBBtn"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const participants = [];
+    let matchDuration = 240;
+    let selectedMatch = null;
+    let timerSec = matchDuration;
+    let timerInterval = null;
+    let paused = false;
+    let running = false;
+    let logoClicks = 0;
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      nameInput: $("nameInput"),
+      addBtn: $("addBtn"),
+      participants: $("participants"),
+      fighterA: $("fighterA"),
+      fighterB: $("fighterB"),
+      createFightBtn: $("createFightBtn"),
+      ranking: $("ranking"),
+      overlay: $("overlay"),
+      versus: $("versus"),
+      countdown: $("countdown"),
+      timer: $("timer"),
+      startBtn: $("startBtn"),
+      pauseBtn: $("pauseBtn"),
+      endBtn: $("endBtn"),
+      closeBtn: $("closeBtn"),
+      resultArea: $("resultArea"),
+      winABtn: $("winABtn"),
+      winBBtn: $("winBBtn"),
+      drawBtn: $("drawBtn"),
+      logo: $("logo"),
+      hiddenMenu: $("hiddenMenu"),
+      durationInput: $("durationInput"),
+      saveDurationBtn: $("saveDurationBtn"),
+    };
+
+    function beep(freq = 880, len = 130, type = "square") {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.value = 0.08;
+      osc.start();
+      setTimeout(() => {
+        osc.stop();
+        ctx.close();
+      }, len);
+    }
+
+    function format(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function renderParticipants() {
+      els.participants.innerHTML = "";
+      participants.forEach((p) => {
+        const span = document.createElement("span");
+        span.className = "pill";
+        span.textContent = p.name;
+        els.participants.appendChild(span);
+      });
+
+      [els.fighterA, els.fighterB].forEach((sel) => {
+        const current = sel.value;
+        sel.innerHTML = `<option value="">Teilnehmer wählen</option>`;
+        participants.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          sel.appendChild(opt);
+        });
+        if ([...sel.options].some((o) => o.value === current)) sel.value = current;
+      });
+    }
+
+    function rankColumns(count) {
+      if (count > 24) return 4;
+      if (count > 12) return 2;
+      return 1;
+    }
+
+    function renderRanking() {
+      const sorted = [...participants].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, "de"));
+      const cols = rankColumns(sorted.length);
+      els.ranking.className = `ranking-grid cols-${cols}`;
+      els.ranking.innerHTML = "";
+
+      if (!sorted.length) {
+        els.ranking.innerHTML = `<div class="rank-col"><div class="row">Noch keine Teilnehmer.</div></div>`;
+        return;
+      }
+
+      const perCol = Math.ceil(sorted.length / cols);
+      for (let c = 0; c < cols; c++) {
+        const col = document.createElement("div");
+        col.className = "rank-col";
+        col.innerHTML = `<div class="row head"><div>#</div><div>Name</div><div>Pkt</div></div>`;
+        sorted.slice(c * perCol, (c + 1) * perCol).forEach((p, i) => {
+          const globalIndex = c * perCol + i + 1;
+          const row = document.createElement("div");
+          row.className = "row";
+          row.innerHTML = `<div>${globalIndex}</div><div>${p.name}</div><div>${p.points}</div>`;
+          col.appendChild(row);
+        });
+        els.ranking.appendChild(col);
+      }
+    }
+
+    function resetFightState() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      running = false;
+      paused = false;
+      timerSec = matchDuration;
+      els.timer.textContent = format(timerSec);
+      els.countdown.textContent = "";
+      els.pauseBtn.disabled = true;
+      els.endBtn.disabled = true;
+      els.startBtn.disabled = false;
+      els.pauseBtn.textContent = "Pause";
+      els.resultArea.style.display = "none";
+    }
+
+    function showResultChoices() {
+      if (!selectedMatch) return;
+      running = false;
+      clearInterval(timerInterval);
+      els.resultArea.style.display = "block";
+      els.winABtn.textContent = `${selectedMatch.a.name} gewinnt`;
+      els.winBBtn.textContent = `${selectedMatch.b.name} gewinnt`;
+      els.pauseBtn.disabled = true;
+      els.endBtn.disabled = true;
+      els.startBtn.disabled = true;
+    }
+
+    async function startCountdownAndFight() {
+      if (!selectedMatch || running) return;
+      els.startBtn.disabled = true;
+      const steps = ["3", "2", "1", "GO!"];
+      const freqs = [700, 700, 700, 1100];
+      for (let i = 0; i < steps.length; i++) {
+        els.countdown.textContent = steps[i];
+        beep(freqs[i], 180, i < 3 ? "square" : "triangle");
+        await new Promise((r) => setTimeout(r, 850));
+      }
+      els.countdown.textContent = "";
+      running = true;
+      els.pauseBtn.disabled = false;
+      els.endBtn.disabled = false;
+
+      timerInterval = setInterval(() => {
+        if (!paused) {
+          timerSec--;
+          els.timer.textContent = format(timerSec);
+          if (timerSec <= 0) {
+            beep(320, 900, "sawtooth");
+            showResultChoices();
+          }
+        }
+      }, 1000);
+    }
+
+    function addPoints(result) {
+      if (!selectedMatch) return;
+      const { a, b } = selectedMatch;
+      if (result === "a") a.points += 3;
+      if (result === "b") b.points += 3;
+      if (result === "draw") {
+        a.points += 1;
+        b.points += 1;
+      }
+      renderRanking();
+      els.overlay.classList.remove("open");
+      selectedMatch = null;
+      resetFightState();
+    }
+
+    els.addBtn.addEventListener("click", () => {
+      const name = els.nameInput.value.trim();
+      if (!name) return;
+      participants.push({ id: crypto.randomUUID(), name, points: 0 });
+      els.nameInput.value = "";
+      renderParticipants();
+      renderRanking();
+    });
+
+    els.nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") els.addBtn.click();
+    });
+
+    els.createFightBtn.addEventListener("click", () => {
+      const aId = els.fighterA.value;
+      const bId = els.fighterB.value;
+      if (!aId || !bId || aId === bId) return alert("Bitte zwei unterschiedliche Teilnehmer wählen.");
+      const a = participants.find((p) => p.id === aId);
+      const b = participants.find((p) => p.id === bId);
+      selectedMatch = { a, b };
+      resetFightState();
+      els.versus.textContent = `${a.name} VS ${b.name}`;
+      els.overlay.classList.add("open");
+    });
+
+    els.startBtn.addEventListener("click", startCountdownAndFight);
+
+    els.pauseBtn.addEventListener("click", () => {
+      if (!running) return;
+      paused = !paused;
+      els.pauseBtn.textContent = paused ? "Weiter" : "Pause";
+    });
+
+    els.endBtn.addEventListener("click", showResultChoices);
+    els.closeBtn.addEventListener("click", () => {
+      els.overlay.classList.remove("open");
+      selectedMatch = null;
+      resetFightState();
+    });
+
+    els.winABtn.addEventListener("click", () => addPoints("a"));
+    els.winBBtn.addEventListener("click", () => addPoints("b"));
+    els.drawBtn.addEventListener("click", () => addPoints("draw"));
+
+    els.logo.addEventListener("click", () => {
+      logoClicks++;
+      if (logoClicks >= 5) {
+        logoClicks = 0;
+        els.hiddenMenu.classList.toggle("open");
+      }
+      setTimeout(() => logoClicks = 0, 1400);
+    });
+
+    els.saveDurationBtn.addEventListener("click", () => {
+      const value = Math.max(30, Math.min(900, Number(els.durationInput.value) || 240));
+      matchDuration = value;
+      timerSec = value;
+      els.durationInput.value = String(value);
+      els.timer.textContent = format(value);
+      alert(`Kampfzeit gespeichert: ${value} Sekunden`);
+    });
+
+    renderParticipants();
+    renderRanking();
+    els.timer.textContent = format(matchDuration);
+  </script>
+</body>
+</html>
