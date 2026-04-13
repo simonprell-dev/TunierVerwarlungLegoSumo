@@ -19,7 +19,8 @@ Dieses Repository bildet die Grundlage für:
 │   ├── auth-service/
 │   ├── document-api/
 │   ├── search-api/
-│   └── llm-orchestrator/
+│   ├── llm-orchestrator/
+│   └── pdf-analysis-service/
 ├── workers/
 │   ├── ingestion-worker/
 │   ├── embedding-worker/

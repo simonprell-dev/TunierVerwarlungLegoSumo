@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  pdf-analysis-service:
+    build:
+      context: ../../services/pdf-analysis-service
+      dockerfile: Dockerfile
+    image: baudoc/pdf-analysis-service:local
+    environment:
+      OCR_DEVICE: ${OCR_DEVICE:-cpu}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
