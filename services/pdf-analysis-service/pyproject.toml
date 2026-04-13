@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "baudoc-pdf-analysis-service"
+version = "0.1.0"
+description = "Eigenstaendiger PDF Analyse Service fuer OCR und Layout-Extraktion"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0,<1.0.0",
+  "uvicorn[standard]>=0.32.0,<1.0.0",
+  "python-multipart>=0.0.9,<1.0.0",
+  "pydantic>=2.9.0,<3.0.0",
+  "PyMuPDF>=1.24.10,<2.0.0",
+  "pytesseract>=0.3.13,<1.0.0",
+  "Pillow>=10.4.0,<12.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0,<9.0.0",
+  "httpx>=0.28.0,<1.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

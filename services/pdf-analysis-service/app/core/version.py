@@ -1,0 +1,4 @@
+SERVICE_NAME = "pdf-analysis-service"
+SERVICE_VERSION = "0.1.0"
+API_VERSION = "v1"
+ANALYSIS_SCHEMA_VERSION = "1.0.0"
