@@ -5,14 +5,19 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "baudoc-document-api"
 version = "0.1.0"
-description = "Persistenzschicht und Datenmodell fuer BauDoc Atlas Document API"
+description = "Upload und Persistenzservice fuer BauDoc Atlas Document API"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "fastapi>=0.115.0,<1.0.0",
+  "pydantic>=2.7.0,<3.0.0",
+  "python-multipart>=0.0.9,<1.0.0",
+]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0.0,<9.0.0",
+  "httpx>=0.28.0,<1.0.0",
 ]
 
 [tool.pytest.ini_options]

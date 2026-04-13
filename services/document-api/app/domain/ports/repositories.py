@@ -19,6 +19,14 @@ class DocumentRepository(Protocol):
     ) -> None:
         ...
 
+    def find_by_tenant_and_checksum(
+        self,
+        *,
+        tenant_id: UUID,
+        checksum_sha256: str,
+    ) -> DocumentPersistenceDTO | None:
+        ...
+
 
 class JobRepository(Protocol):
     def upsert_job(self, dto: JobPersistenceDTO) -> None:

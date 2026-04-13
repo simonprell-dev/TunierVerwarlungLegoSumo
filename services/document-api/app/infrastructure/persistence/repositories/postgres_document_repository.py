@@ -5,13 +5,15 @@ from app.application.dtos import DocumentPersistenceDTO, DocumentSectionPersiste
 from app.domain.ports.repositories import DocumentRepository
 
 SqlExecutor = Callable[[str, dict], None]
+SqlFetcher = Callable[[str, dict], dict | None]
 
 
 class PostgresDocumentRepository(DocumentRepository):
     """Kapselt SQL für Dokumente/Sections vollständig in der Infrastruktur-Schicht."""
 
-    def __init__(self, execute: SqlExecutor) -> None:
+    def __init__(self, execute: SqlExecutor, fetch_one: SqlFetcher) -> None:
         self._execute = execute
+        self._fetch_one = fetch_one
 
     def upsert_document(self, dto: DocumentPersistenceDTO) -> None:
         self._execute(
@@ -63,3 +65,27 @@ class PostgresDocumentRepository(DocumentRepository):
                 """,
                 section.__dict__,
             )
+
+    def find_by_tenant_and_checksum(
+        self,
+        *,
+        tenant_id: UUID,
+        checksum_sha256: str,
+    ) -> DocumentPersistenceDTO | None:
+        row = self._fetch_one(
+            """
+            SELECT id, tenant_id, owner_user_id, title, source_filename, storage_path, mime_type,
+                   checksum_sha256, status, version, processing_state, extracted_pdf_data,
+                   metadata, created_at, updated_at
+              FROM documents
+             WHERE tenant_id = %(tenant_id)s
+               AND checksum_sha256 = %(checksum_sha256)s
+             ORDER BY created_at DESC
+             LIMIT 1
+            """,
+            {"tenant_id": tenant_id, "checksum_sha256": checksum_sha256},
+        )
+        if not row:
+            return None
+
+        return DocumentPersistenceDTO(**row)
