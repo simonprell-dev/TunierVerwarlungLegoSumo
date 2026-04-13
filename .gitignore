@@ -1,0 +1,34 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Python / data tooling
+.venv/
+__pycache__/
+*.pyc
+
+# Logs / temp
+*.log
+.tmp/
+tmp/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Terraform / IaC
+.terraform/
+*.tfstate*
+
+# Docker
+*.pid
