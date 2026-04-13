@@ -1,0 +1,21 @@
+services:
+  api:
+    environment:
+      APP_PROFILE: development
+      LOG_LEVEL: debug
+      RELOAD: "true"
+    volumes:
+      - ./services/api:/app
+
+  worker:
+    environment:
+      APP_PROFILE: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./services/worker:/app
+
+  gateway:
+    environment:
+      APP_PROFILE: development
+    volumes:
+      - ./services/frontend:/app

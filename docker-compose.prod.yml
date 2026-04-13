@@ -1,0 +1,30 @@
+services:
+  api:
+    environment:
+      APP_PROFILE: production
+      LOG_LEVEL: warning
+    deploy:
+      resources:
+        limits:
+          cpus: "2.00"
+          memory: 2G
+
+  worker:
+    environment:
+      APP_PROFILE: production
+      LOG_LEVEL: warning
+    deploy:
+      resources:
+        limits:
+          cpus: "4.00"
+          memory: 4G
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "render"
+      - "video"
+
+  gateway:
+    environment:
+      APP_PROFILE: production
+    read_only: true
