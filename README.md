@@ -47,5 +47,7 @@ Dieses Repository bildet die Grundlage für:
 ## Dokumentation
 - [BAU-6: Monorepo-Struktur, Entwicklungsstandards und Basis-Dokumentation](docs/BAU-6-monorepo-struktur-standards-und-basis-dokumentation.md)
 - [BAU-8: Zielarchitektur und Skalierungsmodell](docs/BAU-8-zielarchitektur-und-skalierungsmodell.md)
+- [BAU-10: Identität, Authentifizierung, Autorisierung und Multiuser-Grundlagen](docs/BAU-10-identitaet-authentifizierung-autorisierung-multiuser-grundlagen.md)
+- [BAU-13: Queueing, Job-Orchestrierung und idempotente Verarbeitungsabläufe](docs/BAU-13-queueing-job-orchestrierung-idempotente-verarbeitungsablaeufe.md)
 - [Entwicklungsstandards (Detail)](docs/standards/development-standards.md)
 - [ADR-Template](docs/adr/0000-template.md)
