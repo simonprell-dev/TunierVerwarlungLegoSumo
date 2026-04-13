@@ -1,0 +1,11 @@
+BEGIN;
+
+DROP TABLE IF EXISTS artifacts;
+DROP TABLE IF EXISTS processing_jobs;
+DROP TABLE IF EXISTS document_sections;
+DROP TABLE IF EXISTS documents;
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS app_users;
+
+COMMIT;
