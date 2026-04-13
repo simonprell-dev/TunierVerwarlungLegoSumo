@@ -1,0 +1,167 @@
+name: baudoc-atlas
+
+services:
+  gateway:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    container_name: baudoc_gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - baudoc_platform_net
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: baudoc_api
+    restart: unless-stopped
+    environment:
+      APP_PROFILE: ${APP_PROFILE:-development}
+      API_PORT: 8000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      STORAGE_ENDPOINT: http://minio:9000
+      VECTOR_ENDPOINT: http://qdrant:6333
+    expose:
+      - "8000"
+    networks:
+      - baudoc_platform_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    build:
+      context: ./services/worker
+      dockerfile: Dockerfile
+    container_name: baudoc_worker
+    restart: unless-stopped
+    environment:
+      APP_PROFILE: ${APP_PROFILE:-development}
+      API_BASE_URL: http://api:8000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - baudoc_platform_net
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8100/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: baudoc_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-baudoc}
+      POSTGRES_USER: ${POSTGRES_USER:-baudoc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-baudoc_dev_password}
+    volumes:
+      - baudoc_postgres_data:/var/lib/postgresql/data
+    networks:
+      - baudoc_platform_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-baudoc} -d ${POSTGRES_DB:-baudoc}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: baudoc_redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "yes"]
+    volumes:
+      - baudoc_redis_data:/data
+    networks:
+      - baudoc_platform_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+    container_name: baudoc_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: ["server", "/data", "--console-address", ":9001"]
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - baudoc_minio_data:/data
+    networks:
+      - baudoc_platform_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/minio/health/live || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.14.1
+    container_name: baudoc_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - baudoc_qdrant_data:/qdrant/storage
+    networks:
+      - baudoc_platform_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:6333/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  baudoc_postgres_data:
+    name: baudoc_postgres_data
+  baudoc_redis_data:
+    name: baudoc_redis_data
+  baudoc_minio_data:
+    name: baudoc_minio_data
+  baudoc_qdrant_data:
+    name: baudoc_qdrant_data
+
+networks:
+  baudoc_platform_net:
+    name: baudoc_platform_net
+    driver: bridge

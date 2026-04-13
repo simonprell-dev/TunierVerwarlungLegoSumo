@@ -1,0 +1,18 @@
+services:
+  api:
+    environment:
+      APP_PROFILE: test
+      LOG_LEVEL: info
+    command: ["python", "app.py", "--port", "8000"]
+
+  worker:
+    environment:
+      APP_PROFILE: test
+      LOG_LEVEL: info
+
+  postgres:
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  redis:
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
