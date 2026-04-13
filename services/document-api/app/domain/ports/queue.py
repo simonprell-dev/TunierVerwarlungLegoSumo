@@ -1,0 +1,3 @@
+class IngestionQueuePort:
+    def enqueue_document_ingestion(self, *, tenant_id: str, document_id: str, checksum_sha256: str) -> None:
+        ...

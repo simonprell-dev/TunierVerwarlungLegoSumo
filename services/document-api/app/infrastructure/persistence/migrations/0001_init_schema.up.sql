@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS documents (
 CREATE INDEX IF NOT EXISTS idx_documents_tenant_status ON documents (tenant_id, status);
 CREATE INDEX IF NOT EXISTS idx_documents_metadata_gin ON documents USING GIN (metadata);
 CREATE INDEX IF NOT EXISTS idx_documents_extracted_pdf_data_gin ON documents USING GIN (extracted_pdf_data);
+CREATE INDEX IF NOT EXISTS idx_documents_tenant_checksum ON documents (tenant_id, checksum_sha256);
 
 CREATE TABLE IF NOT EXISTS document_sections (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
