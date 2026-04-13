@@ -1,0 +1,3 @@
+API_VERSION = "v1"
+SERVICE_NAME = "api-gateway"
+SERVICE_VERSION = "0.1.0"
